@@ -10,11 +10,11 @@
   var hsyncLayer = document.querySelector('.layer--hsync');
 
   var TIMING = {
-    powerOnDelay: 500,
-    bloomDelay: 650,
-    crtWarmDelay: 550,
-    readyDelay: 2800,
-    cursorWait: 3000,
+    powerOnDelay: 250,
+    bloomDelay: 250,
+    crtWarmDelay: 250,
+    readyDelay: 1200,
+    cursorWait: 5000,
     charDelay: 145,
     charJitter: 55,
     linePause: 3000,
