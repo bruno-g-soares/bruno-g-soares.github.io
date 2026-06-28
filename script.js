@@ -13,11 +13,11 @@
     powerOnDelay: 500,
     bloomDelay: 650,
     crtWarmDelay: 550,
-    readyDelay: 2400,
-    cursorWait: 2000,
+    readyDelay: 2800,
+    cursorWait: 3000,
     charDelay: 145,
     charJitter: 55,
-    linePause: 900,
+    linePause: 3000,
     finalPause: 1400,
   };
 

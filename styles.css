@@ -30,49 +30,123 @@ html, body {
   justify-content: center;
 }
 
+.viewport::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 68% 52% at 50% 50%,
+      rgba(245, 238, 220, 0.12) 0%,
+      rgba(170, 195, 255, 0.055) 28%,
+      rgba(30, 42, 70, 0.03) 52%,
+      transparent 74%
+    );
+  opacity: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.viewport--power-on::before {
+  animation: glass-charge 1.9s cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+}
+
+@keyframes glass-charge {
+  0% {
+    opacity: 0;
+    transform: scale(0.92, 0.015);
+    filter: blur(10px) brightness(1.6);
+  }
+  16% {
+    opacity: 0.9;
+    transform: scale(0.18, 0.018);
+    filter: blur(4px) brightness(2.2);
+  }
+  34% {
+    opacity: 0.5;
+    transform: scale(1, 0.05);
+    filter: blur(9px) brightness(1.8);
+  }
+  58% {
+    opacity: 0.25;
+    transform: scale(1.03, 0.86);
+    filter: blur(18px) brightness(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+    filter: blur(28px) brightness(1);
+  }
+}
+
 /* ── Power-on line ────────────────────────────────────────── */
 
 .power-line {
   position: fixed;
   top: 50%;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  width: min(100vw, 86rem);
   height: 1px;
-  transform: translateY(-50%);
-  background: rgba(220, 230, 255, 0.55);
+  transform: translate(-50%, -50%) scaleX(0.035) scaleY(1);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(170, 195, 255, 0.42) 16%,
+    rgba(255, 246, 220, 0.95) 50%,
+    rgba(170, 195, 255, 0.42) 84%,
+    transparent 100%
+  );
   box-shadow:
-    0 0 8px rgba(180, 200, 255, 0.35),
-    0 0 24px rgba(140, 170, 255, 0.15);
+    0 0 2px rgba(255, 250, 230, 0.85),
+    0 0 12px rgba(230, 236, 255, 0.72),
+    0 0 42px rgba(125, 165, 255, 0.32),
+    0 0 96px rgba(255, 220, 160, 0.12);
   opacity: 0;
   z-index: 20;
   pointer-events: none;
-  will-change: height, opacity;
+  will-change: transform, height, opacity, filter;
 }
 
 .viewport--power-on .power-line {
   opacity: 1;
-  animation:
-    line-expand 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) forwards,
-    line-dissolve 0.55s ease-out 0.8s forwards;
-}
-
-@keyframes line-dissolve {
-  to {
-    opacity: 0;
-  }
+  animation: line-expand 1.45s cubic-bezier(0.18, 0.78, 0.22, 1) forwards;
 }
 
 @keyframes line-expand {
   0% {
     height: 1px;
-    opacity: 0.6;
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(0.02) scaleY(1);
+    filter: blur(0) brightness(1.6);
   }
-  15% {
+  9% {
     opacity: 1;
+    transform: translate(-50%, -50%) scaleX(0.05) scaleY(1);
+    filter: blur(0) brightness(2.3);
+  }
+  22% {
+    opacity: 1;
+    height: 2px;
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    filter: blur(0) brightness(1.9);
+  }
+  35% {
+    opacity: 0.92;
+    height: 10px;
+    transform: translate(-50%, -50%) scaleX(1.02) scaleY(1);
+    filter: blur(1px) brightness(1.45);
+  }
+  68% {
+    opacity: 0.62;
+    height: 100vh;
+    transform: translate(-50%, -50%) scaleX(1.04) scaleY(1);
+    filter: blur(10px) brightness(1.08);
   }
   100% {
     height: 100vh;
-    opacity: 0.85;
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(1.04) scaleY(1);
+    filter: blur(24px) brightness(1);
   }
 }
 
@@ -81,26 +155,59 @@ html, body {
 .bloom {
   position: fixed;
   inset: 0;
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 50%,
-    rgba(200, 215, 255, 0.08) 0%,
-    rgba(160, 185, 255, 0.03) 40%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(
+      ellipse 72% 58% at 50% 50%,
+      rgba(255, 244, 214, 0.16) 0%,
+      rgba(180, 200, 255, 0.08) 28%,
+      rgba(80, 110, 180, 0.035) 54%,
+      transparent 78%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(255, 255, 255, 0.025) 49%,
+      rgba(255, 255, 255, 0.055) 50%,
+      rgba(255, 255, 255, 0.025) 51%,
+      transparent 100%
+    );
   opacity: 0;
   z-index: 15;
   pointer-events: none;
+  transform: scale(1.04, 0.12);
+  filter: blur(6px);
 }
 
 .viewport--bloom .bloom {
-  animation: bloom-in 1.4s ease-out forwards;
+  animation: bloom-in 1.85s cubic-bezier(0.18, 0.78, 0.22, 1) forwards;
 }
 
 @keyframes bloom-in {
-  0%   { opacity: 0; }
-  30%  { opacity: 0.7; }
-  60%  { opacity: 0.35; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+    transform: scale(1.02, 0.02);
+    filter: blur(2px) brightness(1.7);
+  }
+  18% {
+    opacity: 0.82;
+    transform: scale(1.02, 0.08);
+    filter: blur(6px) brightness(1.8);
+  }
+  45% {
+    opacity: 0.48;
+    transform: scale(1.02, 0.78);
+    filter: blur(16px) brightness(1.2);
+  }
+  78% {
+    opacity: 0.18;
+    transform: scale(1);
+    filter: blur(24px) brightness(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+    filter: blur(30px) brightness(1);
+  }
 }
 
 /* ── CRT container ────────────────────────────────────────── */
@@ -111,7 +218,7 @@ html, body {
   height: 100%;
   background: #000;
   opacity: 0;
-  filter: brightness(0.3);
+  filter: brightness(0.3) contrast(1.2) saturate(0.9);
   transition: none;
 }
 
@@ -126,21 +233,34 @@ html, body {
 }
 
 .viewport--alive .crt {
-  animation: crt-warm 1.15s ease-out forwards;
+  animation: crt-warm 1.85s cubic-bezier(0.18, 0.78, 0.22, 1) forwards;
 }
 
 @keyframes crt-warm {
   0% {
     opacity: 0;
-    filter: brightness(0.3);
+    transform: scale(1, 0.012);
+    filter: brightness(0.2) contrast(1.4) saturate(0.7) blur(1px);
   }
-  40% {
-    opacity: 0.85;
-    filter: brightness(1.15);
+  12% {
+    opacity: 0.88;
+    transform: scale(1.012, 0.018);
+    filter: brightness(1.45) contrast(1.8) saturate(0.95) blur(0.5px);
+  }
+  34% {
+    opacity: 0.78;
+    transform: scale(1.006, 0.72);
+    filter: brightness(1.18) contrast(1.25) saturate(0.95) blur(0.8px);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.002, 1.016);
+    filter: brightness(1.08) contrast(1.08) saturate(1) blur(0.25px);
   }
   100% {
     opacity: 1;
-    filter: brightness(1);
+    transform: scale(1);
+    filter: brightness(1) contrast(1) saturate(1) blur(0);
   }
 }
 
@@ -298,8 +418,35 @@ html, body {
   opacity: 0;
 }
 
+.viewport--power-on .layer--scanlines {
+  animation: scanline-wake 1.7s cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+}
+
 .viewport--ready .layer--scanlines {
   animation: scanlines-in 2.8s ease-out forwards;
+}
+
+@keyframes scanline-wake {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.02);
+    filter: blur(1px);
+  }
+  24% {
+    opacity: 0.38;
+    transform: scaleY(0.035);
+    filter: blur(0.5px);
+  }
+  58% {
+    opacity: 0.18;
+    transform: scaleY(1.02);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0.08;
+    transform: scaleY(1);
+    filter: blur(0);
+  }
 }
 
 @keyframes scanlines-in {
@@ -409,6 +556,7 @@ html, body {
 /* ── Reduced motion ───────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+  .viewport::before,
   .power-line,
   .bloom,
   .crt,
