@@ -226,7 +226,8 @@ html, body {
 .line {
   font-size: clamp(0.75rem, 1.8vw, 0.875rem);
   letter-spacing: 0.06em;
-  min-height: 1.6em;
+  height: 1.6em;
+  line-height: 1.6;
   margin: 0;
 }
 
@@ -277,7 +278,7 @@ html, body {
 }
 
 .line.prompt {
-  min-height: 1em;
+  height: 1.6em;
 }
 
 .cursor {
