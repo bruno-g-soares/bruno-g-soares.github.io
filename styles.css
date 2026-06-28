@@ -18,8 +18,6 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Viewport shell ───────────────────────────────────────── */
-
 .viewport {
   position: relative;
   width: 100%;
@@ -29,8 +27,6 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-
-/* ── Power-on line ────────────────────────────────────────── */
 
 .power-line {
   position: fixed;
@@ -57,26 +53,14 @@ html, body {
 }
 
 @keyframes line-dissolve {
-  to {
-    opacity: 0;
-  }
+  to { opacity: 0; }
 }
 
 @keyframes line-expand {
-  0% {
-    height: 1px;
-    opacity: 0.6;
-  }
-  15% {
-    opacity: 1;
-  }
-  100% {
-    height: 100vh;
-    opacity: 0.85;
-  }
+  0% { height: 1px; opacity: 0.6; }
+  15% { opacity: 1; }
+  100% { height: 100vh; opacity: 0.85; }
 }
-
-/* ── Bloom warm-up ────────────────────────────────────────── */
 
 .bloom {
   position: fixed;
@@ -103,8 +87,6 @@ html, body {
   100% { opacity: 0; }
 }
 
-/* ── CRT container ────────────────────────────────────────── */
-
 .crt {
   position: relative;
   width: 100%;
@@ -115,36 +97,15 @@ html, body {
   transition: none;
 }
 
-.viewport--ready .crt-glass {
-  animation: brightness-drift 9s ease-in-out infinite;
-}
-
-@keyframes brightness-drift {
-  0%, 100% { filter: brightness(1); }
-  33%       { filter: brightness(0.994); }
-  66%       { filter: brightness(1.003); }
-}
-
 .viewport--alive .crt {
   animation: crt-warm 1.15s ease-out forwards;
 }
 
 @keyframes crt-warm {
-  0% {
-    opacity: 0;
-    filter: brightness(0.3);
-  }
-  40% {
-    opacity: 0.85;
-    filter: brightness(1.15);
-  }
-  100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
+  0% { opacity: 0; filter: brightness(0.3); }
+  40% { opacity: 0.85; filter: brightness(1.15); }
+  100% { opacity: 1; filter: brightness(1); }
 }
-
-/* ── Glass surface (subtle barrel curve) ──────────────────── */
 
 .crt-glass {
   position: relative;
@@ -156,10 +117,17 @@ html, body {
   z-index: 1;
 }
 
-/* ── Content ──────────────────────────────────────────────── */
+.viewport--ready .crt-glass {
+  animation: brightness-drift 9s ease-in-out infinite;
+}
+
+@keyframes brightness-drift {
+  0%, 100% { filter: brightness(1); }
+  33% { filter: brightness(0.994); }
+  66% { filter: brightness(1.003); }
+}
 
 .content {
-  text-align: center;
   opacity: 0;
   user-select: none;
 }
@@ -169,13 +137,13 @@ html, body {
 }
 
 @keyframes content-reveal {
-  0%   { opacity: 0; }
+  0% { opacity: 0; }
   100% { opacity: 1; }
 }
 
 .terminal {
-  display: inline-block;
-  text-align: center;
+  width: 22ch;
+  text-align: left;
 }
 
 .line {
@@ -183,6 +151,7 @@ html, body {
   letter-spacing: 0.06em;
   min-height: 1.6em;
   margin: 0;
+  white-space: pre;
 }
 
 .line.domain {
@@ -213,6 +182,7 @@ html, body {
 
 .cursor {
   display: inline-block;
+  width: 1ch;
   color: rgba(210, 220, 240, 0.85);
   text-shadow:
     0 0 6px rgba(180, 200, 255, 0.3),
@@ -237,10 +207,8 @@ html, body {
 
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+  50% { opacity: 0; }
 }
-
-/* ── Effect layers ────────────────────────────────────────── */
 
 .layer {
   position: fixed;
@@ -249,7 +217,6 @@ html, body {
   z-index: 10;
 }
 
-/* RGB ghost / phosphor separation */
 .layer--rgb {
   z-index: 2;
   background:
@@ -262,7 +229,6 @@ html, body {
   animation: layer-fade 1.2s ease-out 0.3s forwards;
 }
 
-/* Scanlines */
 .layer--scanlines {
   z-index: 11;
   background: repeating-linear-gradient(
@@ -280,7 +246,7 @@ html, body {
 }
 
 @keyframes scanlines-in {
-  0%   { opacity: 0; }
+  0% { opacity: 0; }
   100% { opacity: 0.55; }
 }
 
@@ -288,7 +254,6 @@ html, body {
   to { opacity: 1; }
 }
 
-/* Vignette */
 .layer--vignette {
   z-index: 12;
   background: radial-gradient(
@@ -304,7 +269,6 @@ html, body {
   animation: layer-fade 1s ease-out 0.2s forwards;
 }
 
-/* Screen curvature (barrel distortion illusion) */
 .layer--curve {
   z-index: 13;
   box-shadow:
@@ -318,7 +282,6 @@ html, body {
   animation: layer-fade 1s ease-out 0.1s forwards;
 }
 
-/* Micro flicker */
 .layer--flicker {
   z-index: 14;
   background: transparent;
@@ -332,11 +295,10 @@ html, body {
 
 @keyframes micro-flicker {
   0%, 100% { background: transparent; }
-  33%       { background: rgba(255, 255, 255, 0.006); }
-  66%       { background: rgba(0, 0, 0, 0.008); }
+  33% { background: rgba(255, 255, 255, 0.006); }
+  66% { background: rgba(0, 0, 0, 0.008); }
 }
 
-/* Horizontal sync shimmer */
 .layer--hsync {
   z-index: 15;
   background: linear-gradient(
@@ -358,20 +320,11 @@ html, body {
 }
 
 @keyframes hsync-shimmer {
-  0% {
-    opacity: 0;
-    transform: translateY(-20%);
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(120%);
-  }
+  0% { opacity: 0; transform: translateY(-20%); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(120%); }
 }
 
-/* Film grain / phosphor noise */
 .layer--noise {
   z-index: 16;
   opacity: 0;
@@ -387,8 +340,6 @@ html, body {
 @keyframes noise-in {
   to { opacity: 0.35; }
 }
-
-/* ── Reduced motion ───────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .power-line,
@@ -418,8 +369,11 @@ html, body {
     animation: none;
     filter: none;
   }
+
   .layer--vignette,
   .layer--curve,
   .layer--rgb,
-  .layer--noise { opacity: 1; }
+  .layer--noise {
+    opacity: 1;
+  }
 }
