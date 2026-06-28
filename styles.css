@@ -18,6 +18,8 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Viewport shell ───────────────────────────────────────── */
+
 .viewport {
   position: relative;
   width: 100%;
@@ -27,6 +29,8 @@ html, body {
   align-items: center;
   justify-content: center;
 }
+
+/* ── Power-on line ────────────────────────────────────────── */
 
 .power-line {
   position: fixed;
@@ -53,14 +57,26 @@ html, body {
 }
 
 @keyframes line-dissolve {
-  to { opacity: 0; }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes line-expand {
-  0% { height: 1px; opacity: 0.6; }
-  15% { opacity: 1; }
-  100% { height: 100vh; opacity: 0.85; }
+  0% {
+    height: 1px;
+    opacity: 0.6;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    height: 100vh;
+    opacity: 0.85;
+  }
 }
+
+/* ── Bloom warm-up ────────────────────────────────────────── */
 
 .bloom {
   position: fixed;
@@ -87,6 +103,8 @@ html, body {
   100% { opacity: 0; }
 }
 
+/* ── CRT container ────────────────────────────────────────── */
+
 .crt {
   position: relative;
   width: 100%;
@@ -97,15 +115,36 @@ html, body {
   transition: none;
 }
 
+.viewport--ready .crt-glass {
+  animation: brightness-drift 9s ease-in-out infinite;
+}
+
+@keyframes brightness-drift {
+  0%, 100% { filter: brightness(1); }
+  33%       { filter: brightness(0.994); }
+  66%       { filter: brightness(1.003); }
+}
+
 .viewport--alive .crt {
   animation: crt-warm 1.15s ease-out forwards;
 }
 
 @keyframes crt-warm {
-  0% { opacity: 0; filter: brightness(0.3); }
-  40% { opacity: 0.85; filter: brightness(1.15); }
-  100% { opacity: 1; filter: brightness(1); }
+  0% {
+    opacity: 0;
+    filter: brightness(0.3);
+  }
+  40% {
+    opacity: 0.85;
+    filter: brightness(1.15);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
 }
+
+/* ── Glass surface ────────────────────────────────────────── */
 
 .crt-glass {
   position: relative;
@@ -117,17 +156,10 @@ html, body {
   z-index: 1;
 }
 
-.viewport--ready .crt-glass {
-  animation: brightness-drift 9s ease-in-out infinite;
-}
-
-@keyframes brightness-drift {
-  0%, 100% { filter: brightness(1); }
-  33% { filter: brightness(0.994); }
-  66% { filter: brightness(1.003); }
-}
+/* ── Content ──────────────────────────────────────────────── */
 
 .content {
+  text-align: center;
   opacity: 0;
   user-select: none;
 }
@@ -137,13 +169,13 @@ html, body {
 }
 
 @keyframes content-reveal {
-  0% { opacity: 0; }
+  0%   { opacity: 0; }
   100% { opacity: 1; }
 }
 
 .terminal {
-  width: 22ch;
-  text-align: left;
+  display: inline-block;
+  text-align: center;
 }
 
 .line {
@@ -151,7 +183,30 @@ html, body {
   letter-spacing: 0.06em;
   min-height: 1.6em;
   margin: 0;
-  white-space: pre;
+}
+
+.line.domain,
+.line.message {
+  padding-left: 1ch;
+}
+
+.line.domain::after,
+.line.message::after {
+  content: "▌";
+  display: inline-block;
+  width: 1ch;
+  visibility: hidden;
+}
+
+.line.domain:has(.cursor),
+.line.message:has(.cursor) {
+  padding-left: 0;
+}
+
+.line.domain:has(.cursor)::after,
+.line.message:has(.cursor)::after {
+  content: "";
+  width: 0;
 }
 
 .line.domain {
@@ -207,8 +262,10 @@ html, body {
 
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50%       { opacity: 0; }
 }
+
+/* ── Effect layers ────────────────────────────────────────── */
 
 .layer {
   position: fixed;
@@ -246,7 +303,7 @@ html, body {
 }
 
 @keyframes scanlines-in {
-  0% { opacity: 0; }
+  0%   { opacity: 0; }
   100% { opacity: 0.55; }
 }
 
@@ -295,8 +352,8 @@ html, body {
 
 @keyframes micro-flicker {
   0%, 100% { background: transparent; }
-  33% { background: rgba(255, 255, 255, 0.006); }
-  66% { background: rgba(0, 0, 0, 0.008); }
+  33%       { background: rgba(255, 255, 255, 0.006); }
+  66%       { background: rgba(0, 0, 0, 0.008); }
 }
 
 .layer--hsync {
@@ -320,9 +377,17 @@ html, body {
 }
 
 @keyframes hsync-shimmer {
-  0% { opacity: 0; transform: translateY(-20%); }
-  20% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(120%); }
+  0% {
+    opacity: 0;
+    transform: translateY(-20%);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(120%);
+  }
 }
 
 .layer--noise {
@@ -340,6 +405,8 @@ html, body {
 @keyframes noise-in {
   to { opacity: 0.35; }
 }
+
+/* ── Reduced motion ───────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .power-line,
