@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="brunosoares.net">
+  <title>brunosoares.net</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="viewport" id="viewport">
+    <!-- Power-on horizontal line -->
+    <div class="power-line" aria-hidden="true"></div>
+
+    <!-- Bloom flash during warm-up -->
+    <div class="bloom" aria-hidden="true"></div>
+
+    <!-- Main CRT display -->
+    <div class="crt" id="crt">
+      <div class="crt-glass">
+        <main class="content" id="content" aria-live="polite">
+          <div class="terminal" id="terminal">
+            <p class="line domain" id="line-domain"></p>
+            <p class="line message" id="line-message"></p>
+            <p class="line prompt" id="line-prompt">
+              <span class="cursor cursor--idle" id="cursor" aria-hidden="true">▌</span>
+            </p>
+          </div>
+        </main>
+      </div>
+
+      <!-- Effect layers -->
+      <div class="layer layer--rgb" aria-hidden="true"></div>
+      <div class="layer layer--scanlines" aria-hidden="true"></div>
+      <div class="layer layer--vignette" aria-hidden="true"></div>
+      <div class="layer layer--curve" aria-hidden="true"></div>
+      <div class="layer layer--flicker" aria-hidden="true"></div>
+      <div class="layer layer--hsync" aria-hidden="true"></div>
+      <div class="layer layer--noise" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

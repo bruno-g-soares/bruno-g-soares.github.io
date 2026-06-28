@@ -1,0 +1,425 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  color: #e8ecf4;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Monaco, Consolas, monospace;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Viewport shell ───────────────────────────────────────── */
+
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Power-on line ────────────────────────────────────────── */
+
+.power-line {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: rgba(220, 230, 255, 0.55);
+  box-shadow:
+    0 0 8px rgba(180, 200, 255, 0.35),
+    0 0 24px rgba(140, 170, 255, 0.15);
+  opacity: 0;
+  z-index: 20;
+  pointer-events: none;
+  will-change: height, opacity;
+}
+
+.viewport--power-on .power-line {
+  opacity: 1;
+  animation:
+    line-expand 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) forwards,
+    line-dissolve 0.55s ease-out 0.8s forwards;
+}
+
+@keyframes line-dissolve {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes line-expand {
+  0% {
+    height: 1px;
+    opacity: 0.6;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    height: 100vh;
+    opacity: 0.85;
+  }
+}
+
+/* ── Bloom warm-up ────────────────────────────────────────── */
+
+.bloom {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 50%,
+    rgba(200, 215, 255, 0.08) 0%,
+    rgba(160, 185, 255, 0.03) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.viewport--bloom .bloom {
+  animation: bloom-in 1.4s ease-out forwards;
+}
+
+@keyframes bloom-in {
+  0%   { opacity: 0; }
+  30%  { opacity: 0.7; }
+  60%  { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+
+/* ── CRT container ────────────────────────────────────────── */
+
+.crt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0;
+  filter: brightness(0.3);
+  transition: none;
+}
+
+.viewport--ready .crt-glass {
+  animation: brightness-drift 9s ease-in-out infinite;
+}
+
+@keyframes brightness-drift {
+  0%, 100% { filter: brightness(1); }
+  33%       { filter: brightness(0.994); }
+  66%       { filter: brightness(1.003); }
+}
+
+.viewport--alive .crt {
+  animation: crt-warm 1.15s ease-out forwards;
+}
+
+@keyframes crt-warm {
+  0% {
+    opacity: 0;
+    filter: brightness(0.3);
+  }
+  40% {
+    opacity: 0.85;
+    filter: brightness(1.15);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* ── Glass surface (subtle barrel curve) ──────────────────── */
+
+.crt-glass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* ── Content ──────────────────────────────────────────────── */
+
+.content {
+  text-align: center;
+  opacity: 0;
+  user-select: none;
+}
+
+.viewport--ready .content {
+  animation: content-reveal 3s ease-out forwards;
+}
+
+@keyframes content-reveal {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.terminal {
+  display: inline-block;
+  text-align: center;
+}
+
+.line {
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  letter-spacing: 0.06em;
+  min-height: 1.6em;
+  margin: 0;
+}
+
+.line.domain {
+  font-size: clamp(0.85rem, 2.2vw, 1rem);
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  color: rgba(232, 236, 244, 0.92);
+  margin-bottom: 0.8rem;
+  text-shadow:
+    -0.4px 0 rgba(255, 80, 80, 0.12),
+     0.4px 0 rgba(80, 120, 255, 0.14),
+     0 0 12px rgba(180, 200, 255, 0.25),
+     0 0 28px rgba(140, 170, 255, 0.12);
+}
+
+.line.message {
+  color: rgba(220, 228, 240, 0.72);
+  margin-bottom: 0.8rem;
+  text-shadow:
+    -0.3px 0 rgba(255, 80, 80, 0.08),
+     0.3px 0 rgba(80, 120, 255, 0.1),
+     0 0 8px rgba(180, 200, 255, 0.18);
+}
+
+.line.prompt {
+  min-height: 1em;
+}
+
+.cursor {
+  display: inline-block;
+  color: rgba(210, 220, 240, 0.85);
+  text-shadow:
+    0 0 6px rgba(180, 200, 255, 0.3),
+    0 0 14px rgba(140, 170, 255, 0.15);
+}
+
+.cursor--active {
+  opacity: 1;
+}
+
+.cursor--idle {
+  animation: cursor-blink 1.06s step-end infinite;
+}
+
+.line.prompt .cursor {
+  visibility: hidden;
+}
+
+.content--typing-complete .line.prompt .cursor--idle {
+  visibility: visible;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Effect layers ────────────────────────────────────────── */
+
+.layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* RGB ghost / phosphor separation */
+.layer--rgb {
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(255, 0, 0, 0.018) 0%, transparent 50%, rgba(0, 0, 255, 0.018) 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+.viewport--ready .layer--rgb {
+  animation: layer-fade 1.2s ease-out 0.3s forwards;
+}
+
+/* Scanlines */
+.layer--scanlines {
+  z-index: 11;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+  opacity: 0;
+}
+
+.viewport--ready .layer--scanlines {
+  animation: scanlines-in 2.8s ease-out forwards;
+}
+
+@keyframes scanlines-in {
+  0%   { opacity: 0; }
+  100% { opacity: 0.55; }
+}
+
+@keyframes layer-fade {
+  to { opacity: 1; }
+}
+
+/* Vignette */
+.layer--vignette {
+  z-index: 12;
+  background: radial-gradient(
+    ellipse 75% 70% at 50% 48%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.25) 70%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  opacity: 0;
+}
+
+.viewport--alive .layer--vignette {
+  animation: layer-fade 1s ease-out 0.2s forwards;
+}
+
+/* Screen curvature (barrel distortion illusion) */
+.layer--curve {
+  z-index: 13;
+  box-shadow:
+    inset 0 0 80px rgba(0, 0, 0, 0.45),
+    inset 0 0 200px rgba(0, 0, 0, 0.2);
+  border-radius: 3% / 4%;
+  opacity: 0;
+}
+
+.viewport--alive .layer--curve {
+  animation: layer-fade 1s ease-out 0.1s forwards;
+}
+
+/* Micro flicker */
+.layer--flicker {
+  z-index: 14;
+  background: transparent;
+  opacity: 0;
+  animation: micro-flicker 0.15s steps(3) infinite;
+}
+
+.viewport--ready .layer--flicker {
+  animation: micro-flicker 0.15s steps(3) infinite;
+}
+
+@keyframes micro-flicker {
+  0%, 100% { background: transparent; }
+  33%       { background: rgba(255, 255, 255, 0.006); }
+  66%       { background: rgba(0, 0, 0, 0.008); }
+}
+
+/* Horizontal sync shimmer */
+.layer--hsync {
+  z-index: 15;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 48%,
+    rgba(255, 255, 255, 0.025) 49.5%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.025) 50.5%,
+    transparent 52%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.layer--hsync.active {
+  animation: hsync-shimmer 0.35s ease-out forwards;
+}
+
+@keyframes hsync-shimmer {
+  0% {
+    opacity: 0;
+    transform: translateY(-20%);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+}
+
+/* Film grain / phosphor noise */
+.layer--noise {
+  z-index: 16;
+  opacity: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+
+.viewport--ready .layer--noise {
+  animation: noise-in 2s ease-out forwards;
+}
+
+@keyframes noise-in {
+  to { opacity: 0.35; }
+}
+
+/* ── Reduced motion ───────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .power-line,
+  .bloom,
+  .crt,
+  .content,
+  .layer--scanlines,
+  .layer--flicker,
+  .layer--hsync,
+  .layer--noise,
+  .layer--rgb,
+  .layer--vignette,
+  .layer--curve {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .viewport--power-on .power-line,
+  .viewport--alive .crt,
+  .viewport--ready .content {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .viewport--ready .crt-glass {
+    animation: none;
+    filter: none;
+  }
+  .layer--vignette,
+  .layer--curve,
+  .layer--rgb,
+  .layer--noise { opacity: 1; }
+}
