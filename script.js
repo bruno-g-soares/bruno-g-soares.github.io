@@ -14,16 +14,16 @@
     bloomDelay: 650,
     crtWarmDelay: 550,
     readyDelay: 2400,
-    typingStartDelay: 2400,
+    cursorWait: 2000,
     charDelay: 145,
     charJitter: 55,
-    linePause: 3200,
+    linePause: 900,
     finalPause: 1400,
   };
 
   var LINES = [
     { element: lineDomain, text: 'brunosoares.net' },
-    { element: lineMessage, text: 'Welcome.' },
+    { element: lineMessage, text: "You've arrived." },
   ];
 
   function addClass(el, cls) {
@@ -59,6 +59,8 @@
 
       function typeNextChar() {
         if (index >= text.length) {
+          removeClass(cursor, 'cursor--active');
+          addClass(cursor, 'cursor--idle');
           resolve();
           return;
         }
@@ -76,10 +78,18 @@
     linePrompt.appendChild(cursor);
     removeClass(cursor, 'cursor--active');
     addClass(cursor, 'cursor--idle');
-    addClass(content, 'content--typing-complete');
+    addClass(content, 'content--cursor-visible');
+  }
+
+  function showWaitingCursor() {
+    lineDomain.appendChild(cursor);
+    removeClass(cursor, 'cursor--active');
+    addClass(cursor, 'cursor--idle');
   }
 
   function startTyping() {
+    removeClass(content, 'content--cursor-visible');
+
     var chain = Promise.resolve();
 
     LINES.forEach(function (line, i) {
@@ -147,13 +157,16 @@
         addClass(viewport, 'viewport--ready');
         scheduleHsyncShimmer();
 
+        if (reducedMotion) {
+          showFullText();
+          return;
+        }
+
+        showWaitingCursor();
+
         setTimeout(function () {
-          if (reducedMotion) {
-            showFullText();
-          } else {
-            startTyping();
-          }
-        }, TIMING.typingStartDelay);
+          startTyping();
+        }, TIMING.cursorWait);
       }, TIMING.readyDelay);
     }, TIMING.powerOnDelay);
   }

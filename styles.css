@@ -165,7 +165,7 @@ html, body {
 }
 
 .viewport--ready .content {
-  animation: content-reveal 3s ease-out forwards;
+  animation: content-reveal 1.15s ease-out forwards;
 }
 
 @keyframes content-reveal {
@@ -200,7 +200,7 @@ html, body {
 
 .line.domain:has(.cursor),
 .line.message:has(.cursor) {
-  padding-left: 0;
+  padding-left: 1ch;
 }
 
 .line.domain:has(.cursor)::after,
@@ -256,7 +256,7 @@ html, body {
   visibility: hidden;
 }
 
-.content--typing-complete .line.prompt .cursor--idle {
+.content--cursor-visible .line.prompt .cursor--idle {
   visibility: visible;
 }
 
