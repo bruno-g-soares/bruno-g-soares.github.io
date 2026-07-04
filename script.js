@@ -18,7 +18,7 @@
     charDelay: 145,
     charJitter: 55,
     linePause: 3000,
-    finalPause: 1400,
+    finalPause: 3000,
   };
 
   var LINES = [
