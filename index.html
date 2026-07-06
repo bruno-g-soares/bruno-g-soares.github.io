@@ -85,9 +85,10 @@
     .terminal-history { white-space: pre-wrap; }
     .history-line { color: rgba(244,241,234,.94); }
     .history-output { color: rgba(244,241,234,.84); }
-    .terminal-input-row { display: flex; align-items: baseline; white-space: pre; }
-    .prompt-symbol { color: rgba(163,160,153,.9); margin-right: 1ch; }
-    .terminal-input { flex: 0 0 auto; min-width: 0; max-width: calc(100% - 3ch); width: 0ch; border: 0; border-radius: 0; padding: 0; margin: 0; outline: none; background: transparent; color: rgba(244,241,234,.94); font: inherit; letter-spacing: inherit; text-shadow: inherit; appearance: none; caret-color: transparent; }
+    .terminal-input-row { position: relative; display: flex; align-items: baseline; flex-wrap: wrap; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .prompt-symbol { flex: 0 0 auto; color: rgba(163,160,153,.9); margin-right: 1ch; }
+    .command-text { min-width: 0; max-width: calc(100% - 3ch); color: rgba(244,241,234,.94); overflow-wrap: anywhere; }
+    .terminal-input { position: absolute; inset: 0 auto auto 0; width: 1px; height: 1em; border: 0; border-radius: 0; padding: 0; margin: 0; outline: none; background: transparent; color: transparent; font: inherit; letter-spacing: inherit; appearance: none; caret-color: transparent; opacity: 0; }
     .command-cursor { display: inline-block; flex: 0 0 auto; color: rgba(244,241,234,.92); animation: blink 1.06s step-end infinite; }
     .terminal-help { color: rgba(141,144,136,.82); }
     .controls {
@@ -145,7 +146,7 @@
         <div class="terminal-screen" id="terminalScreen" aria-label="Interactive terminal">
           <div class="terminal-history" id="terminalHistory"></div>
           <div class="terminal-input-row">
-            <span class="prompt-symbol">›</span><input id="terminalInput" class="terminal-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"><span class="command-cursor">▌</span>
+            <span class="prompt-symbol">›</span><span id="terminalCommandText" class="command-text" aria-hidden="true"></span><input id="terminalInput" class="terminal-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"><span class="command-cursor">▌</span>
           </div>
         </div>
       </div>
@@ -167,6 +168,7 @@
   const linePrompt = document.getElementById('linePrompt');
   const typingCursor = document.getElementById('typingCursor');
   const terminalInput = document.getElementById('terminalInput');
+  const terminalCommandText = document.getElementById('terminalCommandText');
   const terminalHistory = document.getElementById('terminalHistory');
   const routes = {
     photos: 'https://photos.brunosoares.net',
@@ -343,18 +345,18 @@
     terminalHistory.appendChild(line);
   }
 
-  function syncInputWidth() {
-    terminalInput.style.width = `${terminalInput.value.length}ch`;
+  function syncCommandText() {
+    terminalCommandText.textContent = terminalInput.value;
   }
-  terminalInput.addEventListener('input', syncInputWidth);
-  syncInputWidth();
+  terminalInput.addEventListener('input', syncCommandText);
+  syncCommandText();
 
   function submitCommand() {
     const raw = terminalInput.value.trim();
     if (!raw) return;
     const cmd = raw.toLowerCase();
     terminalInput.value = '';
-    syncInputWidth();
+    syncCommandText();
     if (cmd === 'clear') {
       terminalHistory.replaceChildren();
       return;
