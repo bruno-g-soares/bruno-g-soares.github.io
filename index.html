@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,41 +13,427 @@
   <link rel="canonical" href="https://brunosoares.net/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>brunosoares.net</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #040504;
+      --ink: #f4f1ea;
+      --muted: #a3a099;
+      --panel: rgba(6, 8, 7, 0.66);
+      --line: rgba(244, 241, 234, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; overflow: hidden; }
+    canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+    .shade {
+      position: fixed; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 42%, transparent 0 28%, rgba(0,0,0,.24) 62%, rgba(0,0,0,.7) 100%),
+        linear-gradient(90deg, rgba(0,0,0,.55), transparent 24%, transparent 76%, rgba(0,0,0,.55));
+      mix-blend-mode: multiply;
+    }
+    .content {
+      position: relative; z-index: 2; min-height: 100svh; display: grid; place-items: center;
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+    .card {
+      width: min(560px, 88vw); min-height: 260px; border: 1px solid var(--line); border-radius: 22px;
+      background:
+        linear-gradient(135deg, rgba(8,10,9,.78), rgba(7,9,8,.48)),
+        radial-gradient(circle at 50% 0%, rgba(241,234,219,.08), transparent 58%);
+      box-shadow: 0 32px 120px rgba(0,0,0,.58), 0 0 0 1px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
+      backdrop-filter: blur(16px) saturate(118%);
+      overflow: hidden;
+      transform: translateY(-1vh);
+      transition: width .45s ease, min-height .45s ease, transform .45s ease, border-radius .45s ease, background .45s ease;
+    }
+    body[data-layout="splash"] .card { width: min(620px, 88vw); min-height: 260px; transform: translateY(-1vh); border-radius: 24px; }
+    body[data-layout="terminal"] .card { width: min(560px, 88vw); min-height: 260px; transform: translate(2.5vw, -1vh); border-radius: 18px; }
+    .terminal-bar {
+      height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 16px;
+      border-bottom: 1px solid rgba(241,234,219,.105);
+      background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.01));
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(241,234,219,.28); box-shadow: 0 0 12px rgba(241,234,219,.08); }
+    .terminal-title { margin-left: 8px; color: rgba(244,241,234,.42); font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
+    .terminal-body { padding: clamp(42px, 7vw, 76px) clamp(34px, 6vw, 64px); height: 238px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+    .terminal-stack { width: min(31ch, 100%); margin: 0 auto; transition: width .45s ease; }
+    .terminal-line { min-height: 1.6em; margin: 0; width: 31ch; max-width: 100%; font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Monaco, Consolas, monospace; text-align: left; transition: width .45s ease, text-align .45s ease, padding-left .45s ease; }
+    .terminal-line.domain { font-size: clamp(0.85rem, 2.2vw, 1rem); line-height: 1.6; letter-spacing: 0.18em; text-transform: lowercase; color: rgba(232,236,244,.92); text-shadow: -0.4px 0 rgba(255,80,80,.12), 0.4px 0 rgba(80,120,255,.14), 0 0 12px rgba(180,200,255,.25), 0 0 28px rgba(140,170,255,.12); }
+    .terminal-line.message { margin-top: .8rem; color: rgba(220,228,240,.72); font-size: clamp(0.75rem, 1.8vw, 0.875rem); line-height: 1.6; letter-spacing: 0.06em; text-shadow: -0.3px 0 rgba(255,80,80,.08), 0.3px 0 rgba(80,120,255,.10), 0 0 8px rgba(180,200,255,.18); }
+    .terminal-line.prompt { margin-top: .8rem; height: 1.6em; }
+    .typing-cursor { display: inline-block; width: 1ch; color: rgba(241,234,219,.82); text-shadow: 0 0 8px rgba(180,200,255,.22); visibility: hidden; }
+    .typing-cursor.visible { visibility: visible; }
+    .typing-cursor.idle { animation: blink 1.06s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    body[data-layout="splash"] .terminal-bar { opacity: .38; }
+    body[data-layout="splash"] .terminal-stack { width: min(34ch, 100%); }
+    body[data-layout="splash"] .terminal-line { width: 34ch; text-align: center; }
+    body[data-layout="splash"] .terminal-line.domain,
+    body[data-layout="splash"] .terminal-line.message { padding-left: 1ch; }
+    body[data-layout="terminal"] .terminal-bar { opacity: 1; }
+    body[data-layout="terminal"] .terminal-stack { width: min(31ch, 100%); }
+    body[data-layout="terminal"] .terminal-line { width: 31ch; text-align: left; }
+    body[data-layout="terminal"] .terminal-line.domain,
+    body[data-layout="terminal"] .terminal-line.message { padding-left: 0; }
+    body[data-terminal-mode="interactive"] .card { width: min(680px, calc(100vw - 32px)); min-height: 340px; transform: translate(0, 0); }
+    body[data-terminal-mode="interactive"] .terminal-title::before { content: "brunosoares.net"; }
+    body[data-terminal-mode="interactive"] .terminal-body { height: 302px; justify-content: flex-start; padding: 22px 24px; }
+    body[data-terminal-mode="interactive"] .terminal-stack { display: none; }
+    body[data-terminal-mode="interactive"] .terminal-screen { display: block; }
+    .terminal-screen { display: none; width: 100%; height: 100%; overflow: hidden; font: 14px/1.65 ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Monaco, Consolas, monospace; color: rgba(244,241,234,.84); letter-spacing: .03em; text-shadow: 0 0 8px rgba(244,241,234,.16), 0 0 22px rgba(244,241,234,.06); }
+    .terminal-history { white-space: pre-wrap; }
+    .terminal-input-row { display: flex; align-items: baseline; white-space: pre; }
+    .prompt-symbol { color: rgba(163,160,153,.9); margin-right: 1ch; }
+    .terminal-input { min-width: 1ch; outline: none; caret-color: transparent; color: rgba(244,241,234,.94); }
+    .command-cursor { display: inline-block; color: rgba(244,241,234,.92); animation: blink 1.06s step-end infinite; }
+    .terminal-help { color: rgba(141,144,136,.82); }
+    .controls {
+      position: fixed; z-index: 4; left: 16px; bottom: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: rgba(241,234,219,.78);
+    }
+    button, label {
+      border: 1px solid var(--line); background: var(--panel); color: inherit; border-radius: 999px; padding: 10px 12px; backdrop-filter: blur(10px);
+    }
+    button { cursor: pointer; }
+    button.active { background: rgba(241,234,219,.14); color: #fff7e8; border-color: rgba(241,234,219,.34); }
+    input { accent-color: #f1eadb; vertical-align: middle; width: 92px; }
+    .hint { margin-left: auto; opacity: .55; }
+    @media (max-width: 720px) {
+      .content { place-items: center; padding: max(18px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+      body[data-terminal-mode="interactive"] .card { width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)); min-height: clamp(220px, 38svh, 320px); margin: 0 auto; border-radius: 16px; }
+      .terminal-bar { height: 34px; padding: 0 12px; }
+      .dot { width: 7px; height: 7px; }
+      body[data-terminal-mode="interactive"] .terminal-body { height: clamp(186px, calc(38svh - 34px), 286px); padding: 16px 17px; }
+      .terminal-screen { font-size: clamp(12px, 3.35vw, 14px); line-height: 1.6; letter-spacing: .015em; }
+    }
+    @media (min-width: 721px) and (max-width: 1100px) {
+      body[data-terminal-mode="interactive"] .card { width: min(640px, 84vw); min-height: 320px; }
+      body[data-terminal-mode="interactive"] .terminal-body { height: 282px; }
+    }
+    @media (max-height: 520px) and (orientation: landscape) {
+      .content { padding: 18px max(22px, env(safe-area-inset-right)) 18px max(22px, env(safe-area-inset-left)); }
+      body[data-terminal-mode="interactive"] .card { width: min(560px, 72vw); min-height: clamp(190px, 68svh, 260px); border-radius: 14px; }
+      .terminal-bar { height: 30px; padding: 0 11px; }
+      .dot { width: 6px; height: 6px; }
+      body[data-terminal-mode="interactive"] .terminal-body { height: clamp(158px, calc(68svh - 30px), 230px); padding: 13px 15px; }
+      .terminal-screen { font-size: clamp(11px, 2.3vw, 13px); line-height: 1.45; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .terminal-stack, .terminal-line { transition: none !important; }
+      .command-cursor, .typing-cursor.idle { animation: blink 1.4s step-end infinite; }
+    }
+  </style>
 </head>
-<body>
-  <div class="viewport" id="viewport">
-    <!-- Power-on horizontal line -->
-    <div class="power-line" aria-hidden="true"></div>
-
-    <!-- Bloom flash during warm-up -->
-    <div class="bloom" aria-hidden="true"></div>
-
-    <!-- Main CRT display -->
-    <div class="crt" id="crt">
-      <div class="crt-glass">
-        <main class="content" id="content" aria-live="polite">
-          <div class="terminal" id="terminal">
-            <p class="line domain" id="line-domain"></p>
-            <p class="line message" id="line-message"></p>
-            <p class="line prompt" id="line-prompt">
-              <span class="cursor cursor--idle" id="cursor" aria-hidden="true">▌</span>
-            </p>
-          </div>
-        </main>
+<body data-layout="terminal" data-terminal-mode="interactive">
+  <canvas id="bg"></canvas>
+  <div class="shade"></div>
+  <main class="content" aria-label="Demo content">
+    <section class="card" aria-label="Floating terminal concept">
+      <div class="terminal-bar" aria-hidden="true">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="terminal-title"></span>
       </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="terminal-stack">
+          <p class="terminal-line domain" id="lineDomain"></p>
+          <p class="terminal-line message" id="lineMessage"></p>
+          <p class="terminal-line prompt" id="linePrompt"><span class="typing-cursor idle" id="typingCursor" aria-hidden="true">▌</span></p>
+        </div>
+        <div class="terminal-screen" id="terminalScreen" aria-label="Interactive terminal">
+          <div class="terminal-history" id="terminalHistory"></div>
+          <div class="terminal-input-row">
+            <span class="prompt-symbol">›</span><span id="terminalInput" class="terminal-input" contenteditable="true" spellcheck="false" autocapitalize="off"></span><span class="command-cursor">▌</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+<script>
+(() => {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const dither = document.createElement('canvas');
+  const dx = dither.getContext('2d', { willReadFrequently: true });
+  const fx = document.createElement('canvas');
+  const fctx = fx.getContext('2d');
+  let W = 0, H = 0, DPR = 1, paused = false, t0 = performance.now(), mode = 0;
+  const controls = { intensity: { value: 0.72 }, motion: { value: 0.38 } };
+  const terminalBody = document.getElementById('terminalBody');
+  const lineDomain = document.getElementById('lineDomain');
+  const lineMessage = document.getElementById('lineMessage');
+  const linePrompt = document.getElementById('linePrompt');
+  const typingCursor = document.getElementById('typingCursor');
+  const terminalInput = document.getElementById('terminalInput');
+  const terminalHistory = document.getElementById('terminalHistory');
+  const routes = {
+    photos: 'https://photos.brunosoares.net',
+    meals: 'https://meals.brunosoares.net',
+  };
 
-      <!-- Effect layers -->
-      <div class="layer layer--rgb" aria-hidden="true"></div>
-      <div class="layer layer--scanlines" aria-hidden="true"></div>
-      <div class="layer layer--vignette" aria-hidden="true"></div>
-      <div class="layer layer--curve" aria-hidden="true"></div>
-      <div class="layer layer--flicker" aria-hidden="true"></div>
-      <div class="layer layer--hsync" aria-hidden="true"></div>
-      <div class="layer layer--noise" aria-hidden="true"></div>
-    </div>
-  </div>
+  // Matches the live brunosoares.net typing cadence.
+  const TIMING = {
+    readyDelay: 1200,
+    cursorWait: 5000,
+    charDelay: 145,
+    charJitter: 55,
+    linePause: 3000,
+    finalPause: 3000,
+  };
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  <script src="script.js"></script>
+  const bayer8 = [
+    0,48,12,60,3,51,15,63, 32,16,44,28,35,19,47,31, 8,56,4,52,11,59,7,55, 40,24,36,20,43,27,39,23,
+    2,50,14,62,1,49,13,61, 34,18,46,30,33,17,45,29, 10,58,6,54,9,57,5,53, 42,26,38,22,41,25,37,21
+  ].map(v => (v + .5) / 64);
+
+  function resize() {
+    DPR = Math.min(devicePixelRatio || 1, 2);
+    W = Math.floor(innerWidth * DPR); H = Math.floor(innerHeight * DPR);
+    canvas.width = W; canvas.height = H;
+    const portrait = innerHeight > innerWidth * 1.12;
+    if (portrait) {
+      const shortSide = Math.min(innerWidth, innerHeight);
+      dither.width = Math.max(360, Math.floor(shortSide / 2.1));
+      dither.height = dither.width;
+    } else {
+      dither.width = Math.max(520, Math.floor(innerWidth / 3));
+      dither.height = Math.max(300, Math.floor(innerHeight / 3));
+    }
+    fx.width = dither.width; fx.height = dither.height;
+  }
+  addEventListener('resize', () => {
+    resize();
+    if (reducedMotion) requestAnimationFrame(frame);
+  }, { passive: true }); resize();
+
+  function smoothNoise(x, y, seed=0) {
+    return Math.sin(x * 1.73 + seed) * Math.cos(y * 1.31 - seed * .7) * .5 +
+           Math.sin((x + y) * .83 + seed * 1.9) * .26 +
+           Math.cos(Math.hypot(x, y) * 1.9 - seed) * .18;
+  }
+  function clamp(v, a=0, b=1) { return Math.max(a, Math.min(b, v)); }
+  function softCircle(x, y, cx, cy, r, feather) {
+    const d = Math.hypot(x - cx, y - cy);
+    return clamp(1 - (d - r) / feather);
+  }
+  function ring(x, y, cx, cy, r, width) {
+    const d = Math.abs(Math.hypot(x - cx, y - cy) - r);
+    return clamp(1 - d / width);
+  }
+
+  function renderField(time) {
+    const w = dither.width, h = dither.height;
+    const img = dx.createImageData(w, h);
+    const data = img.data;
+    const intensity = Number(controls.intensity.value) * (reducedMotion ? 0.82 : 1);
+    const motion = reducedMotion ? 0 : Number(controls.motion.value);
+    const tt = time * (.08 + motion * .32);
+    const aspect = w / h;
+
+    for (let y = 0, p = 0; y < h; y++) {
+      const ny = (y / h - .5) * 2;
+      for (let x = 0; x < w; x++, p += 4) {
+        const nx = (x / w - .5) * 2 * aspect;
+        let v = 0;
+        if (mode === 0) {
+          const c1x = Math.sin(tt*.83) * .42, c1y = Math.cos(tt*.61) * .28;
+          const c2x = Math.cos(tt*.37 + 2.1) * .78, c2y = Math.sin(tt*.51 + .4) * .46;
+          v += softCircle(nx, ny, c1x, c1y, .56 + .08*Math.sin(tt), .42) * .66;
+          v += ring(nx, ny, c2x, c2y, .72, .12) * .44;
+          v += ring(nx, ny, -.9, .38, 1.05 + .08*Math.sin(tt*.7), .1) * .34;
+          v += smoothNoise(nx*3.0, ny*3.0, tt) * .12;
+        } else if (mode === 1) {
+          const wave = Math.sin((nx * 3.1 + smoothNoise(nx*1.4, ny*2.4, tt) * 1.7 + tt) * Math.PI);
+          v += (.5 + .5 * wave) * .48;
+          v += softCircle(nx, ny, .1*Math.sin(tt), -.05, .9, .75) * .36;
+          v += smoothNoise(nx*5.5, ny*2.2, tt*1.7) * .18;
+        } else {
+          v += ring(nx, ny, -.15 + .1*Math.sin(tt), .05, .78, .08) * .55;
+          v += ring(nx, ny, -.15, .05, .36 + .04*Math.cos(tt), .045) * .42;
+          v += softCircle(nx, ny, .64, -.42, .38, .32) * .32;
+          v += (Math.abs(Math.sin((nx*9.0 + ny*2.0 + tt*.9))) < .18 ? .18 : 0);
+          v += smoothNoise(nx*4.2, ny*4.2, tt) * .14;
+        }
+        const vignette = 1 - clamp(Math.hypot(nx/aspect, ny) * .66);
+        v = clamp((v * (.72 + vignette*.28) - .17) * (1.3 * intensity));
+
+        const threshold = bayer8[(x & 7) + ((y & 7) << 3)];
+        const dot = v > threshold * .92 ? 1 : 0;
+        const shade = dot ? 198 + Math.floor(v * 46) : Math.floor(v * 54);
+        data[p] = shade; data[p+1] = shade - 3; data[p+2] = shade - 12; data[p+3] = 255;
+      }
+    }
+    dx.putImageData(img, 0, 0);
+  }
+
+  function drawScanlines(time) {
+    ctx.save();
+    ctx.globalAlpha = .12;
+    ctx.fillStyle = '#000';
+    const gap = Math.max(3, Math.floor(4 * DPR));
+    for (let y = Math.floor((time*18) % gap); y < H; y += gap) ctx.fillRect(0, y, W, 1);
+    ctx.restore();
+  }
+
+  function drawArtifacts(time) {
+    const intensity = Number(controls.intensity.value);
+    fctx.clearRect(0,0,fx.width,fx.height);
+    fctx.save();
+    fctx.globalAlpha = .28 * intensity;
+    fctx.fillStyle = '#f1eadb';
+    const count = 42;
+    for (let i=0;i<count;i++) {
+      const x = ((Math.sin(i*97.13 + time*.13) * 43758.5) % 1 + 1) % 1 * fx.width;
+      const y = ((Math.sin(i*31.77 + 9 + time*.07) * 24634.2) % 1 + 1) % 1 * fx.height;
+      const s = (i % 5 === 0 ? 2.2 : 1.2) * DPR;
+      if ((i + Math.floor(time*2)) % 7 === 0) continue;
+      fctx.fillRect(x-s*2, y, s*4, s);
+      fctx.fillRect(x, y-s*2, s, s*4);
+    }
+    fctx.globalAlpha = .18 * intensity;
+    fctx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
+    fctx.fillText('signal: latent / renderer: bayer-8 / state: dreaming', 18, fx.height - 18);
+    fctx.restore();
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'screen';
+    ctx.drawImage(fx, 0, 0, W, H);
+    ctx.restore();
+  }
+
+  function glitchBands(time) {
+    const motion = Number(controls.motion.value);
+    if (motion < .05) return;
+    ctx.save();
+    ctx.globalAlpha = .08 + motion * .06;
+    const bands = 3;
+    for (let i=0;i<bands;i++) {
+      const y = Math.floor((((Math.sin(time*.31 + i*2.4)+1)/2) * H));
+      const h = Math.max(2, Math.floor((5 + i*4) * DPR));
+      const shift = Math.floor(Math.sin(time*2.7 + i) * 18 * DPR * motion);
+      ctx.drawImage(canvas, 0, y, W, h, shift, y, W, h);
+    }
+    ctx.restore();
+  }
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function liveCharDelay() {
+    return TIMING.charDelay + Math.random() * TIMING.charJitter;
+  }
+
+  function placeCursor(line) {
+    line.appendChild(typingCursor);
+    typingCursor.classList.add('visible');
+    typingCursor.classList.remove('idle');
+  }
+
+  function idleCursor() {
+    typingCursor.classList.add('visible', 'idle');
+  }
+
+  async function typeLine(line, text) {
+    placeCursor(line);
+    for (const ch of text) {
+      line.insertBefore(document.createTextNode(ch), typingCursor);
+      await wait(liveCharDelay());
+    }
+    idleCursor();
+  }
+
+  async function startTerminalSequence() {
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    terminalBody.classList.add('is-typing');
+
+    if (reducedMotion) {
+      lineDomain.textContent = LINES[0].text;
+      lineMessage.textContent = LINES[1].text;
+      linePrompt.appendChild(typingCursor);
+      idleCursor();
+      return;
+    }
+
+    await wait(TIMING.readyDelay);
+    lineDomain.appendChild(typingCursor);
+    idleCursor();
+    await wait(TIMING.cursorWait);
+
+    for (let i = 0; i < LINES.length; i++) {
+      if (i > 0) await wait(TIMING.linePause);
+      await typeLine(LINES[i].element, LINES[i].text);
+    }
+
+    await wait(TIMING.finalPause);
+    linePrompt.appendChild(typingCursor);
+    idleCursor();
+  }
+
+  function frame(now) {
+    const time = reducedMotion ? 0 : (now - t0) / 1000;
+    renderField(time);
+    ctx.fillStyle = '#040504'; ctx.fillRect(0,0,W,H);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = .9;
+    if (innerHeight > innerWidth * 1.12) {
+      const cover = Math.max(W / dither.width, H / dither.height);
+      const drawW = dither.width * cover;
+      const drawH = dither.height * cover;
+      ctx.drawImage(dither, (W - drawW) / 2, (H - drawH) / 2, drawW, drawH);
+    } else {
+      ctx.drawImage(dither, 0, 0, W, H);
+    }
+    ctx.restore();
+    if (!reducedMotion) {
+      glitchBands(time);
+      drawScanlines(time);
+      requestAnimationFrame(frame);
+    }
+  }
+  requestAnimationFrame(frame);
+  setTimeout(() => terminalInput.focus(), 120);
+
+  function appendHistory(text) {
+    terminalHistory.textContent += (terminalHistory.textContent ? '\n' : '') + text;
+  }
+
+  function submitCommand() {
+    const raw = terminalInput.textContent.trim();
+    if (!raw) return;
+    const cmd = raw.toLowerCase();
+    terminalInput.textContent = '';
+    if (cmd === 'clear') {
+      terminalHistory.textContent = '';
+      return;
+    }
+    appendHistory(`› ${raw}`);
+    if (routes[cmd]) {
+      appendHistory(`opening ${routes[cmd]} …`);
+      window.location.href = routes[cmd];
+    } else {
+      appendHistory(`command not found: ${raw}`);
+    }
+  }
+
+  terminalInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); submitCommand(); }
+  });
+
+  document.getElementById('terminalScreen').addEventListener('click', () => terminalInput.focus());
+
+  addEventListener('keydown', e => {
+    const typingInTerminal = document.body.dataset.terminalMode === 'interactive' && document.activeElement === terminalInput;
+    if (e.key === ' ' && !typingInTerminal) { paused = !paused; e.preventDefault(); }
+    if (typingInTerminal) return;
+    if (e.key.toLowerCase() === 's') {
+      const a = document.createElement('a'); a.download = `halftone-bg-${Date.now()}.png`; a.href = canvas.toDataURL('image/png'); a.click();
+    }
+  });
+})();
+</script>
 </body>
 </html>
