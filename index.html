@@ -33,7 +33,7 @@
       mix-blend-mode: multiply;
     }
     .content {
-      position: relative; z-index: 2; min-height: 100svh; display: grid; align-content: start; justify-content: start;
+      position: relative; z-index: 2; min-height: 100svh; display: grid; place-items: center;
       padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     }
     .card {
@@ -76,19 +76,19 @@
     body[data-layout="terminal"] .terminal-line { width: 31ch; text-align: left; }
     body[data-layout="terminal"] .terminal-line.domain,
     body[data-layout="terminal"] .terminal-line.message { padding-left: 0; }
-    body[data-terminal-mode="interactive"] .card { width: min(680px, calc(100vw - 32px)); min-height: 340px; margin-top: max(18px, env(safe-area-inset-top)); border-radius: 18px; }
+    body[data-terminal-mode="interactive"] .card { width: min(680px, calc(100vw - 32px)); min-height: 340px; transform: translate(0, 0); }
     body[data-terminal-mode="interactive"] .terminal-title::before { content: "brunosoares.net"; }
     body[data-terminal-mode="interactive"] .terminal-body { height: 302px; justify-content: flex-start; padding: 22px 24px; }
     body[data-terminal-mode="interactive"] .terminal-stack { display: none; }
     body[data-terminal-mode="interactive"] .terminal-screen { display: block; }
     .terminal-screen { display: none; width: 100%; height: 100%; overflow: hidden; font: 14px/1.65 ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Monaco, Consolas, monospace; color: rgba(244,241,234,.84); letter-spacing: .03em; text-shadow: 0 0 8px rgba(244,241,234,.16), 0 0 22px rgba(244,241,234,.06); }
-    .terminal-history { margin-top: 0.35em; white-space: pre-wrap; }
+    .terminal-history { white-space: pre-wrap; }
+    .history-line { color: rgba(244,241,234,.94); }
     .history-output { color: rgba(244,241,234,.84); }
     .terminal-input-row { display: flex; align-items: baseline; white-space: pre; }
     .prompt-symbol { color: rgba(163,160,153,.9); margin-right: 1ch; }
-    .terminal-input-wrap { display: inline-flex; flex: 1; min-width: 1ch; gap: 0; }
-    .terminal-input { min-width: 1ch; border: 0; border-radius: 0; padding: 0; margin: 0; outline: none; background: transparent; color: rgba(244,241,234,.94); font: inherit; letter-spacing: inherit; text-shadow: inherit; appearance: none; caret-color: transparent; }
-    .command-cursor { display: inline-block; color: rgba(244,241,234,.92); animation: blink 1.06s step-end infinite; flex-shrink: 0; }
+    .terminal-input { flex: 1; min-width: 1ch; width: 100%; border: 0; border-radius: 0; padding: 0; margin: 0; outline: none; background: transparent; color: rgba(244,241,234,.94); font: inherit; letter-spacing: inherit; text-shadow: inherit; appearance: none; caret-color: transparent; }
+    .command-cursor { display: inline-block; color: rgba(244,241,234,.92); animation: blink 1.06s step-end infinite; }
     .terminal-help { color: rgba(141,144,136,.82); }
     .controls {
       position: fixed; z-index: 4; left: 16px; bottom: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
@@ -103,7 +103,7 @@
     .hint { margin-left: auto; opacity: .55; }
     @media (max-width: 720px) {
       .content { place-items: center; padding: max(18px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
-      body[data-terminal-mode="interactive"] .card { width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)); min-height: clamp(220px, 38svh, 320px); border-radius: 16px; }
+      body[data-terminal-mode="interactive"] .card { width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)); min-height: clamp(220px, 38svh, 320px); margin: 0 auto; border-radius: 16px; }
       .terminal-bar { height: 34px; padding: 0 12px; }
       .dot { width: 7px; height: 7px; }
       body[data-terminal-mode="interactive"] .terminal-body { height: clamp(186px, calc(38svh - 34px), 286px); padding: 16px 17px; }
@@ -143,10 +143,10 @@
           <p class="terminal-line prompt" id="linePrompt"><span class="typing-cursor idle" id="typingCursor" aria-hidden="true">▌</span></p>
         </div>
         <div class="terminal-screen" id="terminalScreen" aria-label="Interactive terminal">
-          <div class="terminal-input-row">
-            <span class="prompt-symbol">›</span><span class="terminal-input-wrap"><input id="terminalInput" class="terminal-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"><span class="command-cursor">▌</span></span>
-          </div>
           <div class="terminal-history" id="terminalHistory"></div>
+          <div class="terminal-input-row">
+            <span class="prompt-symbol">›</span><input id="terminalInput" class="terminal-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"><span class="command-cursor">▌</span>
+          </div>
         </div>
       </div>
     </section>
@@ -336,7 +336,7 @@
   requestAnimationFrame(frame);
   setTimeout(() => terminalInput.focus(), 120);
 
-  function appendHistory(text, className = 'history-output') {
+  function appendHistory(text, className = 'history-line') {
     const line = document.createElement('div');
     line.className = className;
     line.textContent = text;
@@ -352,11 +352,12 @@
       terminalHistory.replaceChildren();
       return;
     }
+    appendHistory(`› ${raw}`);
     if (routes[cmd]) {
-      appendHistory(`opening ${routes[cmd]} …`);
+      appendHistory(`opening ${routes[cmd]} …`, 'history-output');
       window.location.href = routes[cmd];
     } else {
-      appendHistory(`command not found: ${raw}`);
+      appendHistory(`command not found: ${raw}`, 'history-output');
     }
   }
 
