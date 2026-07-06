@@ -83,9 +83,11 @@
     body[data-terminal-mode="interactive"] .terminal-screen { display: block; }
     .terminal-screen { display: none; width: 100%; height: 100%; overflow: hidden; font: 14px/1.65 ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Monaco, Consolas, monospace; color: rgba(244,241,234,.84); letter-spacing: .03em; text-shadow: 0 0 8px rgba(244,241,234,.16), 0 0 22px rgba(244,241,234,.06); }
     .terminal-history { white-space: pre-wrap; }
+    .history-line { color: rgba(244,241,234,.94); }
+    .history-output { color: rgba(244,241,234,.84); }
     .terminal-input-row { display: flex; align-items: baseline; white-space: pre; }
     .prompt-symbol { color: rgba(163,160,153,.9); margin-right: 1ch; }
-    .terminal-input { min-width: 1ch; outline: none; caret-color: transparent; color: rgba(244,241,234,.94); }
+    .terminal-input { flex: 1; min-width: 1ch; width: 100%; border: 0; border-radius: 0; padding: 0; margin: 0; outline: none; background: transparent; color: rgba(244,241,234,.94); font: inherit; letter-spacing: inherit; text-shadow: inherit; appearance: none; caret-color: transparent; }
     .command-cursor { display: inline-block; color: rgba(244,241,234,.92); animation: blink 1.06s step-end infinite; }
     .terminal-help { color: rgba(141,144,136,.82); }
     .controls {
@@ -143,7 +145,7 @@
         <div class="terminal-screen" id="terminalScreen" aria-label="Interactive terminal">
           <div class="terminal-history" id="terminalHistory"></div>
           <div class="terminal-input-row">
-            <span class="prompt-symbol">›</span><span id="terminalInput" class="terminal-input" contenteditable="true" spellcheck="false" autocapitalize="off"></span><span class="command-cursor">▌</span>
+            <span class="prompt-symbol">›</span><input id="terminalInput" class="terminal-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"><span class="command-cursor">▌</span>
           </div>
         </div>
       </div>
@@ -171,15 +173,6 @@
     meals: 'https://meals.brunosoares.net',
   };
 
-  // Matches the live brunosoares.net typing cadence.
-  const TIMING = {
-    readyDelay: 1200,
-    cursorWait: 5000,
-    charDelay: 145,
-    charJitter: 55,
-    linePause: 3000,
-    finalPause: 3000,
-  };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const bayer8 = [
@@ -318,60 +311,6 @@
     ctx.restore();
   }
 
-  function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  function liveCharDelay() {
-    return TIMING.charDelay + Math.random() * TIMING.charJitter;
-  }
-
-  function placeCursor(line) {
-    line.appendChild(typingCursor);
-    typingCursor.classList.add('visible');
-    typingCursor.classList.remove('idle');
-  }
-
-  function idleCursor() {
-    typingCursor.classList.add('visible', 'idle');
-  }
-
-  async function typeLine(line, text) {
-    placeCursor(line);
-    for (const ch of text) {
-      line.insertBefore(document.createTextNode(ch), typingCursor);
-      await wait(liveCharDelay());
-    }
-    idleCursor();
-  }
-
-  async function startTerminalSequence() {
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    terminalBody.classList.add('is-typing');
-
-    if (reducedMotion) {
-      lineDomain.textContent = LINES[0].text;
-      lineMessage.textContent = LINES[1].text;
-      linePrompt.appendChild(typingCursor);
-      idleCursor();
-      return;
-    }
-
-    await wait(TIMING.readyDelay);
-    lineDomain.appendChild(typingCursor);
-    idleCursor();
-    await wait(TIMING.cursorWait);
-
-    for (let i = 0; i < LINES.length; i++) {
-      if (i > 0) await wait(TIMING.linePause);
-      await typeLine(LINES[i].element, LINES[i].text);
-    }
-
-    await wait(TIMING.finalPause);
-    linePrompt.appendChild(typingCursor);
-    idleCursor();
-  }
-
   function frame(now) {
     const time = reducedMotion ? 0 : (now - t0) / 1000;
     renderField(time);
@@ -397,25 +336,28 @@
   requestAnimationFrame(frame);
   setTimeout(() => terminalInput.focus(), 120);
 
-  function appendHistory(text) {
-    terminalHistory.textContent += (terminalHistory.textContent ? '\n' : '') + text;
+  function appendHistory(text, className = 'history-line') {
+    const line = document.createElement('div');
+    line.className = className;
+    line.textContent = text;
+    terminalHistory.appendChild(line);
   }
 
   function submitCommand() {
-    const raw = terminalInput.textContent.trim();
+    const raw = terminalInput.value.trim();
     if (!raw) return;
     const cmd = raw.toLowerCase();
-    terminalInput.textContent = '';
+    terminalInput.value = '';
     if (cmd === 'clear') {
-      terminalHistory.textContent = '';
+      terminalHistory.replaceChildren();
       return;
     }
     appendHistory(`› ${raw}`);
     if (routes[cmd]) {
-      appendHistory(`opening ${routes[cmd]} …`);
+      appendHistory(`opening ${routes[cmd]} …`, 'history-output');
       window.location.href = routes[cmd];
     } else {
-      appendHistory(`command not found: ${raw}`);
+      appendHistory(`command not found: ${raw}`, 'history-output');
     }
   }
 
