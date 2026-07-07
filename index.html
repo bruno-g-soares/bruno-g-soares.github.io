@@ -4,11 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>brunosoares.net</title>
-<meta name="description" content="An interactive landing page — a constellation field that reacts to your cursor, framed by a quiet glass terminal.">
+<meta name="description" content="brunosoares.net">
 <meta name="theme-color" content="#000000">
 <meta property="og:type" content="website">
 <meta property="og:title" content="brunosoares.net">
-<meta property="og:description" content="An interactive landing page — a constellation field that reacts to your cursor, framed by a quiet glass terminal.">
+<meta property="og:description" content="brunosoares.net">
 <meta property="og:url" content="https://brunosoares.net/">
 <meta name="twitter:card" content="summary">
 <link rel="canonical" href="https://brunosoares.net/">
@@ -135,16 +135,12 @@
     const breath=(idle>2500&&!reduce)?(0.82+0.18*Math.sin(now*0.0012)):1;
     phase+=0.012; pulseT+=0.016;
 
-    if(mode==='flow'){
-      renderFlow();
-    } else {
-      ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h);
-      if(mode==='nebula') renderNebula(breath);
-      else if(mode==='rain') renderRain();
-      else if(mode==='grid') renderGrid();
-      else if(mode==='spark') renderSpark();
-      else renderConstellation(breath);
-    }
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h);
+    if(mode==='nebula') renderNebula(breath);
+    else if(mode==='rain') renderRain();
+    else if(mode==='grid') renderGrid();
+    else if(mode==='spark') renderSpark();
+    else renderConstellation(breath);
 
     const v=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.30,w/2,h/2,Math.max(w,h)*0.80);
     v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,0.42)');
@@ -202,19 +198,6 @@
       ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x,p.y-p.rlen); ctx.stroke();
     }
     if(mouse.active){ ctx.fillStyle=`rgba(${acc()},0.9)`; ctx.beginPath(); ctx.arc(mouse.x,mouse.y,6,0,Math.PI*2); ctx.fill(); }
-  }
-
-  function renderFlow(){
-    ctx.fillStyle='rgba(0,0,0,0.10)'; ctx.fillRect(0,0,w,h);   // fade -> smoky trails
-    for(const p of particles){
-      const a=(Math.sin(p.x*0.0035)+Math.cos(p.y*0.0035))*Math.PI*0.8 + phase*0.15;
-      const nx=p.x+Math.cos(a)*1.8, ny=p.y+Math.sin(a)*1.8;
-      ctx.strokeStyle=`rgba(${INK},${0.16+0.16*p.z})`; ctx.lineWidth=1.1;
-      ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(nx,ny); ctx.stroke();
-      p.x=nx; p.y=ny;
-      if(p.x<0)p.x+=w; else if(p.x>w)p.x-=w; if(p.y<0)p.y+=h; else if(p.y>h)p.y-=h;
-    }
-    if(mouse.active){ ctx.fillStyle=`rgba(${acc()},0.85)`; ctx.beginPath(); ctx.arc(mouse.x,mouse.y,5,0,Math.PI*2); ctx.fill(); }
   }
 
   function renderGrid(){
