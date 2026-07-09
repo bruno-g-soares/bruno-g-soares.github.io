@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#000000">
 <meta property="og:type" content="website">
 <meta property="og:title" content="brunosoares.net">
-<meta property="og:description" content="brunosoares.net">
+<meta property="og:description" content="You've arrived.">
 <meta property="og:url" content="https://brunosoares.net/">
 <meta name="twitter:card" content="summary">
 <link rel="canonical" href="https://brunosoares.net/">
@@ -20,7 +20,6 @@
   body {
     font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
     color:var(--ink);
-    touch-action:none;
   }
   canvas { position:fixed; inset:0; width:100%; height:100%; display:block; z-index:0; pointer-events:none; }
   .terminal {
@@ -66,7 +65,7 @@
   let w=0,h=0,dpr=1,pts=[];
   let speed=0.34, palette='bone', bgRGB='0,0,0';
   let mode='flow', prevMode='flow', modeT=1, lastModeShift=performance.now();
-  let mx=-9999,my=-9999,bursts=[];
+  let mx=-9999,my=-9999,bursts=[],animationFrame=null;
   const started=performance.now();
   const MODES=['flow','rain','orbit','wave','swarm'];
   const MODE_INTERVAL=52000;
@@ -113,6 +112,15 @@
     prevMode=mode; mode=next; modeT=0; lastModeShift=performance.now(); return true;
   }
   function cycleMode(){ const i=MODES.indexOf(mode); setMode(MODES[(i+1)%MODES.length]); }
+  function renderStatic(){
+    const tt=0;
+    for(const p of pts){
+      const a=fieldAngle('flow',p.x,p.y,tt), step=1.1*dpr;
+      ctx.strokeStyle=p.col.replace(/,([0-9.]+)\)$/,(m,a)=>','+(Number(a)*0.58).toFixed(3)+')');
+      ctx.lineWidth=0.95*dpr;
+      ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+Math.cos(a)*step,p.y+Math.sin(a)*step); ctx.stroke();
+    }
+  }
   function frame(t){
     if(!reduce && t-lastModeShift>MODE_INTERVAL) cycleMode();
     const age=Math.max(0,(t-started)/1000);
@@ -140,16 +148,25 @@
       if(p.life<0 || p.x<0 || p.x>w || p.y<0 || p.y>h){ p.x=Math.random()*w; p.y=Math.random()*h; p.life=(160+Math.random()*280)|0; }
     }
     bursts=bursts.filter(b=>(t-b.t0)/1000<1.15);
-    requestAnimationFrame(frame);
+    animationFrame=requestAnimationFrame(frame);
+  }
+  function startAnimation(){
+    if(!reduce && !document.hidden && animationFrame===null) animationFrame=requestAnimationFrame(frame);
+  }
+  function stopAnimation(){
+    if(animationFrame!==null){ cancelAnimationFrame(animationFrame); animationFrame=null; }
   }
 
-  addEventListener('resize',()=>{ size(); init(); });
+  addEventListener('resize',()=>{ size(); init(); if(reduce) renderStatic(); });
   addEventListener('pointermove',e=>{ mx=e.clientX*dpr; my=e.clientY*dpr; });
   addEventListener('pointerleave',()=>{ mx=-9999; my=-9999; });
   addEventListener('pointerdown',e=>{ bursts.push({x:e.clientX*dpr,y:e.clientY*dpr,t0:performance.now()}); });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden) stopAnimation();
+    else { lastModeShift=performance.now(); startAnimation(); }
+  });
   size(); init();
-  if(!reduce) requestAnimationFrame(frame);
-  else { ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h); }
+  if(!reduce) startAnimation(); else renderStatic();
 
   const hidden=document.getElementById('cmd'), cmdText=document.getElementById('cmdText'), lines=document.getElementById('lines');
   let misses=0;
