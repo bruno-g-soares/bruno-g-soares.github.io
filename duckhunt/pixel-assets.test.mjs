@@ -85,3 +85,24 @@ test('small bush preserves the original two-tone foliage palette', async () => {
   assert.ok(brightPixels > 20, 'bush must retain its bright foliage mass');
   assert.ok(shadedPixels > 20, 'bush shadow must remain distinct from the sky');
 });
+
+test('mobile tree and bush share the grass baseline without floating gaps', async () => {
+  for (const [name, groundRow] of [
+    ['scene-mobile.png', 280],
+    ['scene-mobile-compact.png', 255]
+  ]) {
+    const image = decodeRgba(await readFile(new URL(`./assets/pixel/${name}`, import.meta.url)));
+    const sky = image.pixels.subarray(0, 4);
+
+    for (const [label, x] of [['tree', 45], ['bush', 160]]) {
+      for (let y = groundRow - 5; y < groundRow; y += 1) {
+        const index = (y * image.width + x) * 4;
+        assert.notDeepEqual(
+          image.pixels.subarray(index, index + 4),
+          sky,
+          `${name} ${label} floats above the grass at row ${y}`
+        );
+      }
+    }
+  }
+});
