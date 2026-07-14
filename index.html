@@ -184,6 +184,7 @@
     const numeric=/^[1-5]$/.test(cmd) ? MODES[Number(cmd)-1] : null;
     const next=numeric || (MODES.includes(cmd) ? cmd : null);
     if(next){ setMode(next); print('field: '+next,'dim'); return; }
+    if(cmd==='duckhunt'){ print('loading…','dim'); import('./duckhunt/game.mjs').then(m=>m.startDuckHunt()).catch(()=>print('duckhunt failed to load.','dim')); return; }
     if(cmd==='photos'){ go('https://photos.brunosoares.net'); return; }
     if(cmd==='meals'){ go('https://meals.brunosoares.net'); return; }
     if(cmd==='help'){ misses++; print('there is no index.','dim'); return; }
