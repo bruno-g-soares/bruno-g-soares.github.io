@@ -86,21 +86,28 @@ test('small bush preserves the original two-tone foliage palette', async () => {
   assert.ok(shadedPixels > 20, 'bush shadow must remain distinct from the sky');
 });
 
-test('mobile scenery matches the approved reference placement', async () => {
-  for (const [name, treeTop, bushTop] of [
-    ['scene-mobile.png', 168, 258],
-    ['scene-mobile-compact.png', 143, 233]
+test('scenery sits just behind the foreground grass', async () => {
+  for (const [name, placements] of [
+    ['scene-desktop.png', [
+      ['tree', 0, 100, 0, 7, 26],
+      ['bush', 175, 230, 100, 193, 116]
+    ]],
+    ['scene-mobile.png', [
+      ['tree', 0, 100, 100, 5, 170],
+      ['bush', 120, 190, 220, 154, 255]
+    ]],
+    ['scene-mobile-compact.png', [
+      ['tree', 0, 100, 100, 5, 145],
+      ['bush', 120, 190, 220, 154, 230]
+    ]]
   ]) {
     const image = decodeRgba(await readFile(new URL(`./assets/pixel/${name}`, import.meta.url)));
     const sky = image.pixels.subarray(0, 4);
 
-    for (const [label, xStart, xEnd, yStart, expectedLeft, expectedTop] of [
-      ['tree', 0, 100, 100, 5, treeTop],
-      ['bush', 120, 190, 220, 142, bushTop]
-    ]) {
+    for (const [label, xStart, xEnd, yStart, expectedLeft, expectedTop] of placements) {
       let left = image.width;
       let top = image.height;
-      for (let y = yStart; y < expectedTop + 20; y += 1) {
+      for (let y = yStart; y < expectedTop + 15; y += 1) {
         for (let x = xStart; x < xEnd; x += 1) {
           const index = (y * image.width + x) * 4;
           if (!image.pixels.subarray(index, index + 4).equals(sky)) {
