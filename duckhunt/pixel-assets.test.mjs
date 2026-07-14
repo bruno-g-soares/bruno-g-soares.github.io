@@ -86,23 +86,31 @@ test('small bush preserves the original two-tone foliage palette', async () => {
   assert.ok(shadedPixels > 20, 'bush shadow must remain distinct from the sky');
 });
 
-test('mobile tree and bush share the grass baseline without floating gaps', async () => {
-  for (const [name, groundRow] of [
-    ['scene-mobile.png', 280],
-    ['scene-mobile-compact.png', 255]
+test('mobile scenery matches the approved reference placement', async () => {
+  for (const [name, treeTop, bushTop] of [
+    ['scene-mobile.png', 168, 258],
+    ['scene-mobile-compact.png', 143, 233]
   ]) {
     const image = decodeRgba(await readFile(new URL(`./assets/pixel/${name}`, import.meta.url)));
     const sky = image.pixels.subarray(0, 4);
 
-    for (const [label, x] of [['tree', 45], ['bush', 160]]) {
-      for (let y = groundRow - 5; y < groundRow; y += 1) {
-        const index = (y * image.width + x) * 4;
-        assert.notDeepEqual(
-          image.pixels.subarray(index, index + 4),
-          sky,
-          `${name} ${label} floats above the grass at row ${y}`
-        );
+    for (const [label, xStart, xEnd, yStart, expectedLeft, expectedTop] of [
+      ['tree', 0, 100, 100, 5, treeTop],
+      ['bush', 120, 190, 220, 142, bushTop]
+    ]) {
+      let left = image.width;
+      let top = image.height;
+      for (let y = yStart; y < expectedTop + 20; y += 1) {
+        for (let x = xStart; x < xEnd; x += 1) {
+          const index = (y * image.width + x) * 4;
+          if (!image.pixels.subarray(index, index + 4).equals(sky)) {
+            left = Math.min(left, x);
+            top = Math.min(top, y);
+          }
+        }
       }
+      assert.equal(left, expectedLeft, `${name} ${label} horizontal placement`);
+      assert.equal(top, expectedTop, `${name} ${label} vertical placement`);
     }
   }
 });
