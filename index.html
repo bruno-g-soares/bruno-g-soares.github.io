@@ -187,6 +187,7 @@
     if(cmd==='duckhunt'){ print('loading…','dim'); import('./duckhunt/game.mjs').then(m=>m.startDuckHunt()).catch(()=>print('duckhunt failed to load.','dim')); return; }
     if(cmd==='photos'){ go('https://photos.brunosoares.net'); return; }
     if(cmd==='meals'){ go('https://meals.brunosoares.net'); return; }
+    if(cmd==='dns'){ go('http://dns.brunosoares.net'); return; }
     if(cmd==='help'){ misses++; print('there is no index.','dim'); return; }
     misses++;
     const hints=['not found.','nothing answers to that.','some doors answer to what they are.','short names open quiet rooms.'];
