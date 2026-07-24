@@ -185,6 +185,7 @@
     const next=numeric || (MODES.includes(cmd) ? cmd : null);
     if(next){ setMode(next); print('field: '+next,'dim'); return; }
     if(cmd==='duckhunt'){ print('loading…','dim'); import('./duckhunt/game.mjs').then(m=>m.startDuckHunt()).catch(()=>print('duckhunt failed to load.','dim')); return; }
+    if(cmd==='starcraft'){ go('/openbw/'); return; }
     if(cmd==='photos'){ go('https://photos.brunosoares.net'); return; }
     if(cmd==='meals'){ go('https://meals.brunosoares.net'); return; }
     if(cmd==='dns'){ go('http://dns.brunosoares.net'); return; }
